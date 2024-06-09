@@ -8,6 +8,10 @@ class Project {
     this.todolist.push(todoItemObj);
   }
 
+  removeTodoItem(todoItemId) {
+    this.todolist = this.todolist.filter((todoItem) => todoItem.id !== todoItemId);
+  }
+
   getNumberOfRemainingTasks() {
     return this.todolist.every((item) => !item.checked).length;
   }

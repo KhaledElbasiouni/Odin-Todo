@@ -1,7 +1,6 @@
 class TodoItem {
-  static #id = 0;
   constructor(title, description, dueDate, priority) {
-    this.id = TodoItem.#id++;
+    this.id = Date.now(); // unique id based on time
     this.title = title; // string
     this.description = description; // string
     this.dueDate = dueDate; // Date()?
