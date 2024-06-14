@@ -1,5 +1,7 @@
 class Project {
+  static #counter = 1;
   constructor(name) {
+    this.id = Project.#counter++;
     this.name = name;
     this.todolist = [];
   }

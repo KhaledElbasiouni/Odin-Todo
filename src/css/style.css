@@ -1,5 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&display=swap");
 
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,400,1,0");
+
 *,
 *::before,
 *::after {
@@ -13,6 +15,10 @@ body {
   font-optical-sizing: auto;
   font-weight: 400;
   font-style: normal;
+}
+
+input {
+  font-family: inherit;
 }
 
 li {
@@ -32,13 +38,18 @@ li {
   align-self: center;
 }
 
-#projects-container {
+#projects-sidebar {
   margin: 6px;
 }
 
 #projects-header-container {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+#projects-header {
+  font-size: 20px;
 }
 
 #add-projects-btn {
@@ -47,4 +58,33 @@ li {
   border: none;
   padding: 0px 10px;
   cursor: pointer;
+}
+
+#projects-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.project-name-input {
+  padding: 3px 6px;
+  border: solid 1px rgb(177, 177, 177);
+  font-size: 20px;
+  margin: 4px;
+}
+
+.project-name-input:focus {
+  outline: none;
+}
+
+.project-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 0px 4px;
+  font-size: 18px;
+}
+
+.edit-project {
+  cursor: pointer;
+  border: none;
+  background-color: white;
 }
