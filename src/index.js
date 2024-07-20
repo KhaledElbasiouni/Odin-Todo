@@ -34,11 +34,11 @@ function appendNewProjectInputComponent() {
   newProjectInputContainer.focus();
   newProjectInputFieldCreated = true;
 
-  const cancelBtn = newProjectInputContainer.querySelector(".cancel");
+  const cancelBtn = newProjectInputContainer.querySelector(".cancel-btn");
 
   attachEventListener(cancelBtn, "click", cancelNewProjectInputComponent);
 
-  const confirmBtn = newProjectInputContainer.querySelector(".confirm");
+  const confirmBtn = newProjectInputContainer.querySelector(".confirm-btn");
 
   attachEventListener(confirmBtn, "click", confirmNewProject);
 }
@@ -102,8 +102,8 @@ function createProjectInputComponent({ value = undefined, id = undefined } = {})
   inputElementContainer.classList.add("project-name-input");
   inputElementContainer.innerHTML = `
             <input type="text" name="" id="" />
-            <span class="material-symbols-outlined clickable no-select confirm"> check </span>
-            <span class="material-symbols-outlined clickable no-select cancel"> close </span>`;
+            <span class="material-symbols-outlined confirm-btn"> check </span>
+            <span class="material-symbols-outlined cancel-btn"> close </span>`;
 
   const inputElement = inputElementContainer.firstElementChild;
   if (value) {
@@ -143,11 +143,11 @@ function editProjectActive(event) {
     id: projectContainerDiv.dataset.id,
   });
 
-  const cancelBtn = projectInputContainer.querySelector(".cancel");
+  const cancelBtn = projectInputContainer.querySelector(".cancel-btn");
 
   attachEventListener(cancelBtn, "click", cancelNewProjectInputComponent);
 
-  const confirmBtn = projectInputContainer.querySelector(".confirm");
+  const confirmBtn = projectInputContainer.querySelector(".confirm-btn");
 
   attachEventListener(confirmBtn, "click", confirmNewProject);
 
