@@ -3,19 +3,19 @@ class Project {
   constructor(name) {
     this.id = Project.#counter++;
     this.name = name;
-    this.todolist = [];
+    this.tasks = [];
   }
 
   addTodoItem(todoItemObj) {
-    this.todolist.push(todoItemObj);
+    this.tasks.push(todoItemObj);
   }
 
   removeTodoItem(todoItemId) {
-    this.todolist = this.todolist.filter((todoItem) => todoItem.id !== todoItemId);
+    this.tasks = this.tasks.filter((todoItem) => todoItem.id !== todoItemId);
   }
 
   getNumberOfRemainingTasks() {
-    return this.todolist.every((item) => !item.checked).length;
+    return this.tasks.every((item) => !item.checked).length;
   }
 }
 

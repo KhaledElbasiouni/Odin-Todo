@@ -10,100 +10,66 @@ const addProjectsBtn = document.querySelector("#add-projects-btn");
 
 //Global variables
 let newProjectInputFieldCreated = false;
-let newProjectInputField = undefined;
+let newProjectInputContainer = undefined;
 let projects = {};
 
 // Event listeners
-addProjectsBtn.addEventListener("click", createNewProjectInputField);
+addProjectsBtn.addEventListener("click", appendNewProjectInputComponent);
 addProjectsBtn.addEventListener("mousedown", preventDefault);
 
 function preventDefault(event) {
   event.preventDefault();
 }
 
-function createNewProjectInputField() {
+function appendNewProjectInputComponent() {
   newProjectInputFieldCreated = true;
-  if (newProjectInputFieldCreated && newProjectInputField) {
-    newProjectInputField.focus();
+  if (newProjectInputFieldCreated && newProjectInputContainer) {
+    console.log(newProjectInputContainer);
+    newProjectInputContainer.firstElementChild.focus();
     return;
   }
 
-  newProjectInputField = createProjectInputElement();
+  newProjectInputContainer = createProjectInputComponent();
 
-  projectsContainer.appendChild(newProjectInputField);
-  newProjectInputField.focus();
+  projectsContainer.appendChild(newProjectInputContainer);
+  newProjectInputContainer.focus();
   newProjectInputFieldCreated = true;
 
-  attachEventListener(newProjectInputField, "focusout", abortCreateNewProject);
+  const cancelBtn = newProjectInputContainer.querySelector(".cancel");
+  console.log(cancelBtn);
+
+  attachEventListener(cancelBtn, "click", cancelNewProjectInputComponent);
+
+  const confirmBtn = newProjectInputContainer.querySelector(".confirm");
+  console.log(confirmBtn);
+
+  attachEventListener(confirmBtn, "click", confirmNewProject);
 }
 
-function abortCreateNewProject(event) {
+function cancelNewProjectInputComponent(event) {
   newProjectInputFieldCreated = false;
-  newProjectInputField = undefined;
-  removeEventListener(event.target, "focusout", abortCreateNewProject);
+  newProjectInputContainer = undefined;
+  removeEventListener(event.target, "click", cancelNewProjectInputComponent);
+
+  event.target.parentElement.remove();
 }
 
-function createProjectInputElement({ value = undefined, id = undefined } = {}) {
-  let inputElement = document.createElement("input");
-  attachEventListener(inputElement, "focusout", inputFieldFocusOut);
-  inputElement.type = "text";
-  inputElement.name = "New Project Name";
-  inputElement.classList.add("project-name-input");
+function confirmNewProject(event) {
+  const newProjectContainer = event.target.parentElement;
+  const inputElement = newProjectContainer.firstElementChild;
+  const projectName = inputElement.value;
 
-  if (value) {
-    inputElement.value = value;
-  }
-  if (id) {
-    inputElement.dataset.id = id;
-  }
-  return inputElement;
-}
+  if (projectName !== "") {
+    addNewProjectItem(projectName);
+    removeEventListener(event.target, "click", confirmNewProject);
 
-function attachEventListener(node, event, listener) {
-  node.addEventListener(event, listener);
-}
-
-function removeEventListener(node, event, listener) {
-  node.removeEventListener(event, listener);
-}
-
-function inputFieldFocusOut(event) {
-  removeEventListener(event.target, "focusout", inputFieldFocusOut);
-  let input = event.target.value;
-  let projectId = event.target.dataset.id;
-  event.target.parentNode.removeChild(event.target);
-
-  if (input !== "") {
-    if (projectId) {
-      editExistingProject(projectId, input);
-    } else {
-      addNewProject(input);
-    }
+    newProjectContainer.remove();
+  } else {
+    // prompt the user to enter a name
   }
 }
 
-function addNewProject(projectName) {
-  let projectId = createNewProjectObject(projectName).id;
-
-  let { projectContainerDiv, editProjectBtn } = createNewProjectComponent(
-    projectName,
-    projectId
-  );
-
-  projectsContainer.appendChild(projectContainerDiv);
-  attachEventListener(editProjectBtn, "click", editProjectActive);
-}
-
-function editExistingProject(id, newName) {
-  let projectObj = changeProjectObjectName(id, newName);
-
-  let { projectContainerDiv, editProjectBtn } = createNewProjectComponent(newName, id);
-
-  projectsContainer.appendChild(projectContainerDiv);
-  attachEventListener(editProjectBtn, "click", editProjectActive);
-}
-
-function createNewProjectComponent(projectName, projectId) {
+function createNewProjectItemComponent(projectName, projectId) {
   let projectContainerDiv = document.createElement("div");
   projectContainerDiv.classList.add("project-container");
   projectContainerDiv.dataset.id = projectId;
@@ -122,15 +88,75 @@ function createNewProjectComponent(projectName, projectId) {
   return { projectContainerDiv, projectTitle, editProjectBtn };
 }
 
+function addNewProjectItem(projectName) {
+  let projectId = createNewProjectObject(projectName).id;
+
+  let { projectContainerDiv, editProjectBtn } = createNewProjectItemComponent(
+    projectName,
+    projectId
+  );
+
+  projectsContainer.appendChild(projectContainerDiv);
+  attachEventListener(editProjectBtn, "click", editProjectActive);
+}
+
+function createProjectInputComponent({ value = undefined, id = undefined } = {}) {
+  let inputElementContainer = document.createElement("div");
+  inputElementContainer.classList.add("project-name-input");
+  inputElementContainer.innerHTML = `
+            <input type="text" name="" id="" />
+            <span class="material-symbols-outlined clickable no-select confirm"> check </span>
+            <span class="material-symbols-outlined clickable no-select cancel"> close </span>`;
+
+  const inputElement = inputElementContainer.firstElementChild;
+  if (value) {
+    inputElement.value = value;
+  }
+  if (id) {
+    inputElementContainer.dataset.id = id;
+  }
+  return inputElementContainer;
+}
+
+function attachEventListener(node, event, listener) {
+  node.addEventListener(event, listener);
+}
+
+function removeEventListener(node, event, listener) {
+  node.removeEventListener(event, listener);
+}
+
+function editExistingProject(id, newName) {
+  let projectObj = changeProjectObjectName(id, newName);
+
+  let { projectContainerDiv, editProjectBtn } = createNewProjectItemComponent(
+    newName,
+    id
+  );
+
+  projectsContainer.appendChild(projectContainerDiv);
+  attachEventListener(editProjectBtn, "click", editProjectActive);
+}
+
 function editProjectActive(event) {
   let projectContainerDiv = event.target.parentNode.parentNode;
-  let projectName = projectContainerDiv.firstChild.innerText;
-  let projectInputField = createProjectInputElement({
+  let projectName = projectContainerDiv.firstElementChild.innerText;
+  let projectInputContainer = createProjectInputComponent({
     value: projectName,
     id: projectContainerDiv.dataset.id,
   });
 
-  projectsContainer.replaceChild(projectInputField, projectContainerDiv);
+  const cancelBtn = projectInputContainer.querySelector(".cancel");
+  console.log(cancelBtn);
+
+  attachEventListener(cancelBtn, "click", cancelNewProjectInputComponent);
+
+  const confirmBtn = projectInputContainer.querySelector(".confirm");
+  console.log(confirmBtn);
+
+  attachEventListener(confirmBtn, "click", confirmNewProject);
+
+  projectsContainer.replaceChild(projectInputContainer, projectContainerDiv);
 }
 
 function createNewProjectObject(projectName) {
