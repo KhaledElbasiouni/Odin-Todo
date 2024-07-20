@@ -24,7 +24,6 @@ function preventDefault(event) {
 function appendNewProjectInputComponent() {
   newProjectInputFieldCreated = true;
   if (newProjectInputFieldCreated && newProjectInputContainer) {
-    console.log(newProjectInputContainer);
     newProjectInputContainer.firstElementChild.focus();
     return;
   }
@@ -36,12 +35,10 @@ function appendNewProjectInputComponent() {
   newProjectInputFieldCreated = true;
 
   const cancelBtn = newProjectInputContainer.querySelector(".cancel");
-  console.log(cancelBtn);
 
   attachEventListener(cancelBtn, "click", cancelNewProjectInputComponent);
 
   const confirmBtn = newProjectInputContainer.querySelector(".confirm");
-  console.log(confirmBtn);
 
   attachEventListener(confirmBtn, "click", confirmNewProject);
 }
@@ -147,12 +144,10 @@ function editProjectActive(event) {
   });
 
   const cancelBtn = projectInputContainer.querySelector(".cancel");
-  console.log(cancelBtn);
 
   attachEventListener(cancelBtn, "click", cancelNewProjectInputComponent);
 
   const confirmBtn = projectInputContainer.querySelector(".confirm");
-  console.log(confirmBtn);
 
   attachEventListener(confirmBtn, "click", confirmNewProject);
 
