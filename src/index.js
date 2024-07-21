@@ -64,6 +64,9 @@ function confirmNewProject(event) {
   } else {
     // prompt the user to enter a name
   }
+
+  newProjectInputFieldCreated = false;
+  newProjectInputContainer = undefined;
 }
 
 function createNewProjectItemComponent(projectName, projectId) {
@@ -81,6 +84,10 @@ function createNewProjectItemComponent(projectName, projectId) {
 
   projectContainerDiv.appendChild(projectTitle);
   projectContainerDiv.appendChild(editProjectBtn);
+
+  attachEventListener(projectContainerDiv, "click", (e) =>
+    mountProjectViewComponent(e.target.dataset.id)
+  );
 
   return { projectContainerDiv, projectTitle, editProjectBtn };
 }
@@ -166,3 +173,51 @@ function changeProjectObjectName(id, newName) {
 
   return projects[id];
 }
+
+function mountProjectViewComponent(projectId) {
+  console.log("Mounting project view");
+  const tasksContentContainer = document.querySelector("#tasks-content-container");
+  const selectedProject = projects[projectId];
+
+  tasksContentContainer.innerHTML = `
+  <h2 id="task-owner-header">${selectedProject.name}</h2>
+        <div id="tasks-container">
+        </div>`;
+
+  const tasksContainer = tasksContentContainer.querySelector("#tasks-container");
+  let tasksItems = "";
+
+  selectedProject.tasks.forEach((task) => {
+    taskItems += `
+    <div class="task-item">
+            <div class="flex-container">
+              <input type="checkbox" name="" id="" />
+              <div class="task-title">${task.title}</div>
+            </div>
+            <button class="edit-task">
+              <span class="material-symbols-sharp"> edit </span>
+            </button>
+          </div>`;
+  });
+
+  tasksContainer.innerHTML = tasksItems;
+}
+
+{
+  /* <div class="task-item">
+            <div class="flex-container">
+              <input type="checkbox" name="" id="" />
+              <div class="task-title">Implement task</div>
+            </div>
+            <button class="edit-task">
+              <span class="material-symbols-sharp"> edit </span>
+            </button>
+          </div> */
+}
+
+// TODO:
+// Add option to create tasks
+// Maybe copy similar way to adding new projects?
+
+// Add event listeners to Inbox, Today, Upcoming Week, Upcoming Month elements
+// Inbox vs Today vs Upcoming Week vs Specific Project
