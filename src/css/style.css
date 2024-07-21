@@ -100,6 +100,50 @@ li {
   cursor: pointer;
 }
 
+#tasks-content-container {
+  width: 900px;
+  justify-self: center;
+
+  #task-owner-header {
+    font-size: 3em;
+    margin-bottom: 24px;
+  }
+
+  #tasks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .task-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      cursor: pointer;
+      user-select: none;
+
+      > .flex-container {
+        display: flex;
+        gap: 10px;
+
+        input[type="checkbox"] {
+          min-width: 20px;
+          cursor: pointer;
+        }
+
+        .task-title {
+          font-size: 20px;
+        }
+      }
+
+      .edit-task {
+        cursor: pointer;
+        border: none;
+        background-color: white;
+      }
+    }
+  }
+}
+
 .confirm-btn {
   cursor: pointer;
   user-select: none;
