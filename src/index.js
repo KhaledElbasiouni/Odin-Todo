@@ -179,45 +179,47 @@ function mountProjectViewComponent(projectId) {
   const tasksContentContainer = document.querySelector("#tasks-content-container");
   const selectedProject = projects[projectId];
 
-  tasksContentContainer.innerHTML = `
+  let tasksContentContainerInnerHTML = `
   <h2 id="task-owner-header">${selectedProject.name}</h2>
         <div id="tasks-container">
         </div>`;
 
-  const tasksContainer = tasksContentContainer.querySelector("#tasks-container");
   let tasksItems = "";
 
+  // Move this to a separate function
   selectedProject.tasks.forEach((task) => {
     taskItems += `
-    <div class="task-item">
-            <div class="flex-container">
-              <input type="checkbox" name="" id="" />
-              <div class="task-title">${task.title}</div>
-            </div>
-            <button class="edit-task">
-              <span class="material-symbols-sharp"> edit </span>
-            </button>
+          <div class="task-item">
+          <div class="flex-container">
+          <input type="checkbox" name="" id="" />
+          <div class="task-title">${task.title}</div>
+          </div>
+          <button class="edit-task">
+          <span class="material-symbols-sharp"> edit </span>
+          </button>
           </div>`;
   });
 
-  tasksContainer.innerHTML = tasksItems;
-}
+  tasksContentContainerInnerHTML += `<div id="add-task-container">
+  <button id="add-task-btn">
+  <span class="material-symbols-outlined"> add </span>
+  </button>
+  <div id="add-task-text">Add Task</div>
+  </div>`;
 
-{
-  /* <div class="task-item">
-            <div class="flex-container">
-              <input type="checkbox" name="" id="" />
-              <div class="task-title">Implement task</div>
-            </div>
-            <button class="edit-task">
-              <span class="material-symbols-sharp"> edit </span>
-            </button>
-          </div> */
+  tasksContentContainer.innerHTML = tasksContentContainerInnerHTML;
+  const tasksContainer = tasksContentContainer.querySelector("#tasks-container");
+  tasksContainer.innerHTML = tasksItems;
+
+  attachEventListener(
+    tasksContentContainer.querySelector("#add-task-container"),
+    "click",
+    () => console.log("Add Task")
+  );
 }
 
 // TODO:
-// Add option to create tasks
-// Maybe copy similar way to adding new projects?
+// Create input for new task
 
 // Add event listeners to Inbox, Today, Upcoming Week, Upcoming Month elements
 // Inbox vs Today vs Upcoming Week vs Specific Project
