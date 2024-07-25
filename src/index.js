@@ -11,6 +11,7 @@ const addProjectsBtn = document.querySelector("#add-projects-btn");
 //Global variables
 let newProjectInputFieldCreated = false;
 let newProjectInputContainer = undefined;
+let currentProjectInView = {};
 let projects = {};
 
 // Event listeners
@@ -54,10 +55,9 @@ function cancelNewProjectInputComponent(event) {
 function confirmNewProject(event) {
   const newProjectContainer = event.target.parentElement;
   const inputElement = newProjectContainer.firstElementChild;
-  const projectName = inputElement.value;
 
-  if (projectName !== "") {
-    addNewProjectItem(projectName);
+  if (inputElement.value !== "") {
+    addNewProjectItem(inputElement.value);
     removeEventListener(event.target, "click", confirmNewProject);
 
     newProjectContainer.remove();
@@ -85,9 +85,7 @@ function createNewProjectItemComponent(projectName, projectId) {
   projectContainerDiv.appendChild(projectTitle);
   projectContainerDiv.appendChild(editProjectBtn);
 
-  attachEventListener(projectContainerDiv, "click", (e) =>
-    mountProjectViewComponent(e.target.dataset.id)
-  );
+  attachEventListener(projectContainerDiv, "click", mountProjectViewComponent);
 
   return { projectContainerDiv, projectTitle, editProjectBtn };
 }
@@ -174,52 +172,113 @@ function changeProjectObjectName(id, newName) {
   return projects[id];
 }
 
-function mountProjectViewComponent(projectId) {
-  console.log("Mounting project view");
+function mountProjectViewComponent(event) {
+  if (event.target.textContent.trim() === "edit") {
+    event.stopPropagation();
+    return;
+  }
+  const projectId = event.currentTarget.dataset.id;
   const tasksContentContainer = document.querySelector("#tasks-content-container");
-  const selectedProject = projects[projectId];
+  currentProjectInView = projects[projectId];
 
-  let tasksContentContainerInnerHTML = `
-  <h2 id="task-owner-header">${selectedProject.name}</h2>
-        <div id="tasks-container">
-        </div>`;
-
-  let tasksItems = "";
-
-  // Move this to a separate function
-  selectedProject.tasks.forEach((task) => {
-    taskItems += `
-          <div class="task-item">
-          <div class="flex-container">
-          <input type="checkbox" name="" id="" />
-          <div class="task-title">${task.title}</div>
-          </div>
-          <button class="edit-task">
-          <span class="material-symbols-sharp"> edit </span>
-          </button>
-          </div>`;
-  });
-
-  tasksContentContainerInnerHTML += `<div id="add-task-container">
-  <button id="add-task-btn">
-  <span class="material-symbols-outlined"> add </span>
-  </button>
-  <div id="add-task-text">Add Task</div>
+  tasksContentContainer.innerHTML = `
+    <h2 id="task-owner-header">${currentProjectInView.name}</h2>
+    <div id="tasks-container"></div>
+    <div id="add-task-container">
+      <button id="add-task-btn">
+      <span class="material-symbols-outlined">add</span>
+    </button>
+    <div id="add-task-text">Add Task</div>
   </div>`;
 
-  tasksContentContainer.innerHTML = tasksContentContainerInnerHTML;
-  const tasksContainer = tasksContentContainer.querySelector("#tasks-container");
-  tasksContainer.innerHTML = tasksItems;
-
+  renderTasks(currentProjectInView.tasks);
   attachEventListener(
     tasksContentContainer.querySelector("#add-task-container"),
     "click",
-    () => console.log("Add Task")
+    createTaskInputComponent
   );
 }
 
+function renderTasks(tasks) {
+  if (tasks.length === 0) {
+    return;
+  }
+
+  const tasksContentContainer = document.querySelector("#tasks-content-container");
+  let taskItems = "";
+  tasks.forEach((task) => {
+    taskItems += `
+          <div class="task-item">
+            <div class="flex-container">
+              <input type="checkbox" name="" id="" />
+              <div class="task-title">${task.title}</div>
+            </div>
+            <button class="edit-task">
+              <span class="material-symbols-sharp">edit</span>
+            </button>
+          </div>`;
+  });
+  tasksContentContainer.innerHTML = taskItems;
+  activateTaskEditButtons();
+}
+
+function activateTaskEditButtons() {
+  const tasksContentContainer = document.querySelector("#tasks-content-container");
+  const editBtns = tasksContentContainer.querySelectorAll(".edit-task");
+
+  editBtns.forEach((editBtn) =>
+    attachEventListener(editBtn, "click", (e) =>
+      console.log(`Edit task: ${e.target.textContent}`)
+    )
+  );
+}
+
+function createTaskInputComponent(event) {
+  console.log(event.currentTarget);
+  const addTaskContainer = event.currentTarget;
+
+  const taskInputContainer = document.createElement("div");
+  taskInputContainer.id = "task-input-container";
+  taskInputContainer.innerHTML = `
+            <input type="text" name="" id="" />
+            <span class="material-symbols-outlined confirm-btn">check</span>
+            <span class="material-symbols-outlined cancel-btn">close</span>
+          `;
+
+  addTaskContainer.replaceWith(taskInputContainer);
+
+  attachEventListener(taskInputContainer.querySelector(".confirm-btn"), "click", () =>
+    console.log("Confirm")
+  );
+
+  attachEventListener(taskInputContainer.querySelector(".cancel-btn"), "click", () =>
+    console.log("Cancel")
+  );
+}
+
+function confirmNewTask(event) {
+  const taskInputContainer = event.target.parentElement;
+  const inputField = taskInputContainer.firstElementChild;
+
+  if (inputField.value !== "") {
+    createNewTaskObject(inputField.value);
+    removeEventListener(event.target, "click", confirmNewTask);
+
+    taskInputContainer.remove();
+  } else {
+    // prompt the user to enter a title
+  }
+}
+
+function createNewTaskObject(taskTitle) {
+  let newTask = new TodoItem(taskTitle, "", "", "");
+  currentProjectInView.tasks.push(newTask);
+
+  return newTask;
+}
+
 // TODO:
-// Create input for new task
+// Confirm and Cancel creation of task
 
 // Add event listeners to Inbox, Today, Upcoming Week, Upcoming Month elements
 // Inbox vs Today vs Upcoming Week vs Specific Project

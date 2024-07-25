@@ -194,3 +194,27 @@ li {
     background-color: rgb(231, 231, 231);
   }
 }
+
+#task-input-container {
+  display: flex;
+  gap: 5px;
+
+  input {
+    flex: 1;
+    font-size: 20px;
+  }
+
+  .confirm-btn,
+  .cancel-btn {
+    font-size: 30px;
+    border-radius: 5px;
+  }
+
+  .confirm-btn:hover {
+    background-color: rgb(183, 236, 176);
+  }
+
+  .cancel-btn:hover {
+    background-color: rgb(236, 176, 176);
+  }
+}
