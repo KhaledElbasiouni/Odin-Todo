@@ -17,6 +17,10 @@ class Project {
   getNumberOfRemainingTasks() {
     return this.tasks.every((item) => !item.checked).length;
   }
+
+  getTask(taskId) {
+    return this.tasks.find((task) => task.id === taskId);
+  }
 }
 
 export default Project;
