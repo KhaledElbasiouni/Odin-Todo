@@ -49,6 +49,7 @@ function confirmProject(event) {
 
   if (currentProjectUnderEdit) {
     currentProjectUnderEdit.name = projectName;
+    document.querySelector("#task-owner-header").innerText = projectName;
   } else {
     createNewProjectObject(projectName);
   }
