@@ -96,7 +96,7 @@ li {
   outline: none;
 }
 
-.project-container {
+.project-item {
   display: flex;
   justify-content: space-between;
   margin: 0px 4px;
@@ -178,7 +178,7 @@ li {
     }
   }
 
-  .task-input-container {
+  #task-input-container {
     display: flex;
     gap: 5px;
     margin-top: 20px;

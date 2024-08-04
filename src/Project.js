@@ -1,7 +1,7 @@
 class Project {
   static #counter = 1;
   constructor(name) {
-    this.id = Project.#counter++;
+    this.id = (Project.#counter++).toString();
     this.name = name;
     this.tasks = [];
   }

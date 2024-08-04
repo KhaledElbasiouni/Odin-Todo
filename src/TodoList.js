@@ -1,5 +1,5 @@
 class TodoList {
-  constructor(name) {
+  constructor() {
     this.projects = [];
   }
 
@@ -13,6 +13,10 @@ class TodoList {
 
   getUpcomingMonthProjects() {
     console.log("Not implemented yet");
+  }
+
+  getProject(projectId) {
+    return this.projects.find((project) => project.id === projectId);
   }
 }
 

@@ -3,105 +3,97 @@ import "./css/style.css";
 
 import TodoItem from "./TodoItem";
 import Project from "./Project";
+import TodoList from "./TodoList";
 
 // Selectors
 const projectsContainer = document.querySelector("#projects-container");
 const addProjectsBtn = document.querySelector("#add-projects-btn");
 
 //Global variables
-let newProjectInputFieldCreated = false;
 let newProjectInputContainer = undefined;
 let currentProjectInView = {};
 let currentTaskUnderEdit = undefined;
-let projects = {};
+let currentProjectUnderEdit = undefined;
+
+let todoList = new TodoList();
 
 // Event listeners
-addProjectsBtn.addEventListener("click", appendNewProjectInputComponent);
+addProjectsBtn.addEventListener("click", addNewProjectActive);
 addProjectsBtn.addEventListener("mousedown", preventDefault);
 
 function preventDefault(event) {
   event.preventDefault();
 }
 
-function appendNewProjectInputComponent() {
-  newProjectInputFieldCreated = true;
-  if (newProjectInputFieldCreated && newProjectInputContainer) {
+function addNewProjectActive() {
+  if (newProjectInputContainer) {
     newProjectInputContainer.firstElementChild.focus();
     return;
   }
+  renderProjects(); // Reset any projects being edited
 
   newProjectInputContainer = createProjectInputComponent();
 
   projectsContainer.appendChild(newProjectInputContainer);
-  newProjectInputContainer.focus();
-  newProjectInputFieldCreated = true;
-
-  const cancelBtn = newProjectInputContainer.querySelector(".cancel-btn");
-
-  attachEventListener(cancelBtn, "click", cancelNewProjectInputComponent);
-
-  const confirmBtn = newProjectInputContainer.querySelector(".confirm-btn");
-
-  attachEventListener(confirmBtn, "click", confirmNewProject);
+  newProjectInputContainer.firstElementChild.focus();
 }
 
-function cancelNewProjectInputComponent(event) {
-  newProjectInputFieldCreated = false;
-  newProjectInputContainer = undefined;
-  removeEventListener(event.target, "click", cancelNewProjectInputComponent);
-
-  event.target.parentElement.remove();
-}
-
-function confirmNewProject(event) {
+function confirmProject(event) {
   const newProjectContainer = event.target.parentElement;
-  const inputElement = newProjectContainer.firstElementChild;
+  const projectName = newProjectContainer.firstElementChild.value;
 
-  if (inputElement.value !== "") {
-    addNewProjectItem(inputElement.value);
-    removeEventListener(event.target, "click", confirmNewProject);
-
-    newProjectContainer.remove();
-  } else {
-    // prompt the user to enter a name
+  if (projectName === "") {
+    // prompt the user to enter a title
+    return;
   }
 
-  newProjectInputFieldCreated = false;
+  if (currentProjectUnderEdit) {
+    currentProjectUnderEdit.name = projectName;
+  } else {
+    createNewProjectObject(projectName);
+  }
+
+  renderProjects();
+}
+
+function renderProjects() {
+  currentProjectUnderEdit = undefined;
   newProjectInputContainer = undefined;
+  if (todoList.projects.length === 0) {
+    return;
+  }
+  const projectsContainer = document.querySelector("#projects-container");
+
+  let projectsContainerInnerHTML = "";
+  todoList.projects.forEach((project) => {
+    projectsContainerInnerHTML += `
+    <div class="project-item" data-projectid=${project.id}>
+            <div class="project-title">${project.name}</div>
+            <button class="edit-project">
+              <span class="material-symbols-sharp">edit</span>
+            </button>
+          </div>
+    `;
+  });
+
+  projectsContainer.innerHTML = projectsContainerInnerHTML;
+  attachProjectItemsListeners();
 }
 
-function createNewProjectItemComponent(projectName, projectId) {
-  let projectContainerDiv = document.createElement("div");
-  projectContainerDiv.classList.add("project-container");
-  projectContainerDiv.dataset.id = projectId;
+function attachProjectItemsListeners() {
+  const projectItems = document.querySelectorAll(".project-item");
 
-  let projectTitle = document.createElement("div");
-  projectTitle.classList.add("project-title");
-  projectTitle.innerText = projectName;
+  projectItems.forEach((project) => {
+    attachEventListener(project, "click", onProjectClick);
 
-  let editProjectBtn = document.createElement("button");
-  editProjectBtn.classList.add("edit-project");
-  editProjectBtn.innerHTML = '<span class="material-symbols-sharp"> edit </span>';
-
-  projectContainerDiv.appendChild(projectTitle);
-  projectContainerDiv.appendChild(editProjectBtn);
-
-  attachEventListener(projectContainerDiv, "click", mountProjectViewComponent);
-
-  attachEventListener(editProjectBtn, "click", editProjectActive);
-
-  return { projectContainerDiv };
+    const editBtn = project.querySelector(".edit-project");
+    attachEventListener(editBtn, "click", (e) =>
+      editProjectActive(e.target.parentNode.parentNode.dataset.projectid)
+    );
+  });
 }
 
-function addNewProjectItem(projectName) {
-  let projectId = createNewProjectObject(projectName).id;
-
-  let { projectContainerDiv } = createNewProjectItemComponent(projectName, projectId);
-
-  projectsContainer.appendChild(projectContainerDiv);
-}
-
-function createProjectInputComponent({ value = undefined, id = undefined } = {}) {
+function createProjectInputComponent() {
   let inputElementContainer = document.createElement("div");
   inputElementContainer.classList.add("project-name-input");
   inputElementContainer.innerHTML = `
@@ -109,13 +101,23 @@ function createProjectInputComponent({ value = undefined, id = undefined } = {})
             <span class="material-symbols-outlined confirm-btn"> check </span>
             <span class="material-symbols-outlined cancel-btn"> close </span>`;
 
-  const inputElement = inputElementContainer.firstElementChild;
-  if (value) {
-    inputElement.value = value;
+  if (currentProjectUnderEdit !== undefined) {
+    inputElementContainer.dataset.projectid = currentProjectUnderEdit.id;
+    inputElementContainer.firstElementChild.value = currentProjectUnderEdit.name;
   }
-  if (id) {
-    inputElementContainer.dataset.id = id;
-  }
+
+  attachEventListener(
+    inputElementContainer.querySelector(".confirm-btn"),
+    "click",
+    confirmProject
+  );
+
+  attachEventListener(
+    inputElementContainer.querySelector(".cancel-btn"),
+    "click",
+    renderProjects
+  );
+
   return inputElementContainer;
 }
 
@@ -127,56 +129,29 @@ function removeEventListener(node, event, listener) {
   node.removeEventListener(event, listener);
 }
 
-// Is this even used?
-// function editExistingProject(id, newName) {
-//   let projectObj = changeProjectObjectName(id, newName);
+function editProjectActive(projectId) {
+  renderProjects(); // Reset any other projects being edited
 
-//   let { projectContainerDiv } = createNewProjectItemComponent(newName, id);
+  currentProjectUnderEdit = todoList.getProject(projectId);
 
-//   projectsContainer.appendChild(projectContainerDiv);
-//   attachEventListener(editProjectBtn, "click", editProjectActive);
-// }
+  let projectInputContainer = createProjectInputComponent();
+  projectInputContainer.firstElementChild.innerText = currentProjectUnderEdit.name;
 
-function editProjectActive(event) {
-  let projectContainerDiv = event.target.parentNode.parentNode;
-  let projectName = projectContainerDiv.firstElementChild.innerText;
-  let projectInputContainer = createProjectInputComponent({
-    value: projectName,
-    id: projectContainerDiv.dataset.id,
-  });
-
-  const cancelBtn = projectInputContainer.querySelector(".cancel-btn");
-
-  attachEventListener(cancelBtn, "click", cancelNewProjectInputComponent);
-
-  const confirmBtn = projectInputContainer.querySelector(".confirm-btn");
-
-  attachEventListener(confirmBtn, "click", confirmNewProject);
-
-  projectsContainer.replaceChild(projectInputContainer, projectContainerDiv);
+  document
+    .querySelector(`.project-item[data-projectid="${projectId}"]`)
+    .replaceWith(projectInputContainer);
 }
 
 function createNewProjectObject(projectName) {
   let newProject = new Project(projectName);
-  projects[newProject.id] = newProject;
+  todoList.projects.push(newProject);
 
   return newProject;
 }
 
-function changeProjectObjectName(id, newName) {
-  projects[id].name = newName;
-
-  return projects[id];
-}
-
-function mountProjectViewComponent(event) {
-  if (event.target.textContent.trim() === "edit") {
-    event.stopPropagation();
-    return;
-  }
-  const projectId = event.currentTarget.dataset.id;
+function mountProjectViewComponent(projectId) {
   const tasksContentContainer = document.querySelector("#tasks-content-container");
-  currentProjectInView = projects[projectId];
+  currentProjectInView = todoList.getProject(projectId);
 
   tasksContentContainer.innerHTML = `
     <h2 id="task-owner-header">${currentProjectInView.name}</h2>
@@ -184,6 +159,16 @@ function mountProjectViewComponent(event) {
 
   appendAddTaskBtn();
   renderTasks(currentProjectInView.tasks);
+}
+
+function onProjectClick(event) {
+  if (event.target.textContent.trim() === "edit") {
+    event.stopPropagation();
+    return;
+  }
+  const projectId = event.currentTarget.dataset.projectid;
+
+  mountProjectViewComponent(projectId);
 }
 
 function appendAddTaskBtn() {
@@ -205,6 +190,7 @@ function appendAddTaskBtn() {
 }
 
 function renderTasks(tasks) {
+  currentTaskUnderEdit = undefined;
   if (tasks.length === 0) {
     return;
   }
@@ -227,9 +213,8 @@ function renderTasks(tasks) {
   activateTaskEditButtons();
 }
 
-function activateTaskEditButtons() {
-  const tasksContentContainer = document.querySelector("#tasks-content-container");
-  const editBtns = tasksContentContainer.querySelectorAll(".edit-task");
+function attachTaskEditListeners() {
+  const editBtns = document.querySelectorAll(".edit-task");
 
   editBtns.forEach((editBtn) =>
     attachEventListener(editBtn, "click", (e) =>
@@ -240,7 +225,7 @@ function activateTaskEditButtons() {
 
 function createTaskInputComponent() {
   const taskInputContainer = document.createElement("div");
-  taskInputContainer.classList.add("task-input-container");
+  taskInputContainer.id = "task-input-container";
   taskInputContainer.innerHTML = `
   <input type="text" name="" id="" />
   <span class="material-symbols-outlined confirm-btn">check</span>
@@ -248,6 +233,7 @@ function createTaskInputComponent() {
   `;
   if (currentTaskUnderEdit !== undefined) {
     taskInputContainer.dataset.taskid = currentTaskUnderEdit.id;
+    taskInputContainer.firstElementChild.value = currentTaskUnderEdit.title;
   }
 
   attachEventListener(
@@ -266,8 +252,9 @@ function createTaskInputComponent() {
 }
 
 function addNewTaskActive() {
+  renderTasks(currentProjectInView.tasks); // Reset any tasks being edited
+
   const taskInputContainer = createTaskInputComponent();
-  taskInputContainer.id = "add-new-task-container";
   const addTaskContainer = document.querySelector("#add-task-container");
 
   addTaskContainer.replaceWith(taskInputContainer);
@@ -276,17 +263,17 @@ function addNewTaskActive() {
 
 function confirmTask(event) {
   const taskInputContainer = event.target.parentElement;
-  const inputField = taskInputContainer.firstElementChild;
+  const taskTitle = taskInputContainer.firstElementChild.value;
 
-  if (inputField.value === "") {
+  if (taskTitle === "") {
     // prompt the user to enter a title
     return;
   }
 
   if (currentTaskUnderEdit) {
-    currentTaskUnderEdit.title = inputField.value;
+    currentTaskUnderEdit.title = taskTitle;
   } else {
-    createNewTaskObject(inputField.value);
+    createNewTaskObject(taskTitle);
     taskInputContainer.remove();
     appendAddTaskBtn();
   }
@@ -296,7 +283,6 @@ function confirmTask(event) {
 function cancelTaskInput() {
   if (currentTaskUnderEdit) {
     renderTasks(currentProjectInView.tasks);
-    currentTaskUnderEdit = undefined;
   } else {
     document.querySelector("#add-new-task-container").remove();
     appendAddTaskBtn();
@@ -315,7 +301,6 @@ function editTask(taskId) {
 
   currentTaskUnderEdit = currentProjectInView.getTask(taskId);
   const taskInputContainer = createTaskInputComponent();
-  taskInputContainer.firstElementChild.value = currentTaskUnderEdit.title;
 
   document
     .querySelector(`.task-item[data-taskid="${taskId}"]`)
@@ -324,7 +309,7 @@ function editTask(taskId) {
   taskInputContainer.firstElementChild.focus();
 }
 // TODO:
-//
+// Refactor projects code to be more similar to tasks
 
 // Add event listeners to Inbox, Today, Upcoming Week, Upcoming Month elements
 // Inbox vs Today vs Upcoming Week vs Specific Project
